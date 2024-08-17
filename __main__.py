@@ -7,6 +7,7 @@ from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.common.by import By
 from datetime import datetime, timedelta
 from selenium import webdriver
+from dotenv import load_dotenv
 import pyperclip
 import sqlite3
 import json
@@ -21,7 +22,7 @@ def open_browser():
     options = Options()
     # options.add_argument("--headless")  # 如果需要无界面模式，取消注释
 
-    service = Service(r'D:\Code\My_plugin\Calendar\chromedriver-win64\chromedriver.exe')
+    service = Service(os.getenv("driver_path"))
     
     driver = webdriver.Chrome(service=service, options=options)
     
@@ -29,8 +30,8 @@ def open_browser():
 
 def sign_in(driver):
     
-    email = ""
-    password = ""
+    email = os.getenv("email_address")
+    password = os.getenv("email_password")
 
     url = "https://developer.microsoft.com/en-us/graph/graph-explorer"
     driver.get(url)
@@ -156,19 +157,16 @@ def sign_in(driver):
     
     global post_event
     post_event = WebDriverWait(driver, 15).until(
-        # EC.presence_of_element_located((By.CLASS_NAME, ".ms-FocusZone.css-218.ms-DetailsRow.queryRow-360"))
         EC.presence_of_element_located((By.XPATH, "//*[text()='安排会议']"))
     )
     
     global request_body_tab
     request_body_tab = WebDriverWait(driver, 15).until(
-        # EC.presence_of_element_located((By.CSS_SELECTOR, ".view-lines.monaco-mouse-cursor-text"))
         EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'view-lines') and contains(@class, 'monaco-mouse-cursor-text')]"))
     )
     
     global run_query
     run_query = WebDriverWait(driver, 15).until(
-        # EC.presence_of_element_located((By.CSS_SELECTOR, ".ms-Button.ms-Button--primary.root-263"))
         EC.presence_of_element_located((By.XPATH, "//*[text() = 'Run query']"))
     )
     
@@ -359,6 +357,8 @@ def get_acwing_contest(driver):
 
 if __name__ == "__main__":
     
+    load_dotenv()
+    
     driver = open_browser()
 
     get_codeforces_contest(driver)
@@ -372,9 +372,9 @@ if __name__ == "__main__":
     get_lanqiao_contest(driver)
     
     get_acwing_contest(driver)
-    
+        
     sign_in(driver)
-    
+        
     store_event(driver)
     
     driver.quit()
