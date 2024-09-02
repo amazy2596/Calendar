@@ -21,17 +21,25 @@ def open_browser():
 
     options = Options()
     # options.add_argument("--headless")  # 如果需要无界面模式，取消注释
+    options.add_argument("--start-maximized")  # 启动时最大化窗口
+    options.add_argument('--disable-software-rasterizer')  # 禁用软件光栅化
+    options.add_argument("--disable-gpu") # 禁用GPU加速
+    options.add_argument('--disable-dev-shm-usage')  # 避免资源占用过大
 
-    service = Service(os.getenv("driver_path"))
+    service = Service(os.getenv("DRIVER_PATH"))
     
     driver = webdriver.Chrome(service=service, options=options)
     
     return driver
 
-def sign_in(driver):
+def log_in(driver):
     
-    email = os.getenv("email_address")
-    password = os.getenv("email_password")
+    url = "https://developer.microsoft.com/en-us/graph/graph-explorer"
+
+    driver.get(url)
+    
+    email = os.getenv("EMAIL_ADDRESS")
+    password = os.getenv("EMAIL_PASSWORD")
 
     url = "https://developer.microsoft.com/en-us/graph/graph-explorer"
     driver.get(url)
@@ -144,7 +152,9 @@ def sign_in(driver):
             
     except NoSuchElementException:
         pass
-        
+
+def prepare_query(driver):
+    
     search_box = WebDriverWait(driver, 15).until(
         EC.presence_of_element_located((By.XPATH, "//*[@placeholder = 'Search sample queries']"))
     )
@@ -203,21 +213,26 @@ def create_event(driver, name, time):
         .perform()
 
 def store_event(driver):
-    data_dir = os.path.join(os.path.dirname(__file__), '..', 'data')
-    os.makedirs(data_dir, exist_ok=True)
-    database_path = os.path.join(data_dir, 'event.db')
+    
+    current_dir = os.path.dirname(__file__)
+    database_path = os.path.join(current_dir, 'added.db')
+    
+    global conn, cursor
     conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
-    cursor.execute(''' create table if not exists events(
+    cursor.execute(''' 
+        create table if not exists events(
         time text,
         name text
-    )''')
+        )
+    ''')
+    conn.commit()
     for name, time in data.items():
         cursor.execute("select * from events where name = ?", (name,))
         result = cursor.fetchone()
         if not result:
             create_event(driver, name, time)
-            cursor.execute("insert into events values(?, ?)", (time, name))
+            cursor.execute("insert into events values(?, ?)", (datetime.strftime(time, "%Y-%m-%d %H:%M:%S"), name))
             conn.commit()
     
 def get_codeforces_contest(driver):
@@ -236,7 +251,7 @@ def get_codeforces_contest(driver):
             time = datetime.strptime(time, "%b/%d/%Y %H:%M")
             
             if time > datetime.now():
-                print(name, time)
+                print(time, name)
                 data[name] = time
                 
 def get_nowcoder_contest(driver):
@@ -255,7 +270,7 @@ def get_nowcoder_contest(driver):
         time = datetime.strptime(time, "%Y-%m-%d %H:%M")
         
         if time > datetime.now():
-            print(name, time)
+            print(time, name)
             data[name] = time
             
     url = "https://ac.nowcoder.com/acm/contest/vip-index?topCategoryFilter=14"
@@ -273,7 +288,7 @@ def get_nowcoder_contest(driver):
         time = datetime.strptime(time, "%Y-%m-%d %H:%M")
         
         if time > datetime.now():
-            print(name, time)
+            print(time, name)
             data[name] = time
             
 def get_atcoder_contest(driver):
@@ -291,7 +306,7 @@ def get_atcoder_contest(driver):
         time = datetime.strptime(time, "%Y-%m-%d(%a) %H:%M")
         
         if time > datetime.now():
-            print(name, time)
+            print(time, name)
             data[name] = time
             
 def get_luogu_contest(driver):
@@ -311,7 +326,7 @@ def get_luogu_contest(driver):
         time = datetime.strptime(time, "%Y-%m-%d %H:%M")
         
         if time > datetime.now():
-            print(name, time)
+            print(time, name)
             data[name] = time
             
 def get_lanqiao_contest(driver):
@@ -333,7 +348,7 @@ def get_lanqiao_contest(driver):
         time = datetime.strptime(time, "%Y-%m-%d %H:%M")
         
         if time > datetime.now():
-            print(name, time)
+            print(time, name)
             data[name] = time
             
 def get_acwing_contest(driver):
@@ -352,8 +367,21 @@ def get_acwing_contest(driver):
         time = datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
         
         if time > datetime.now():
-            print(name, time)
+            print(time, name)
             data[name] = time
+    
+def store_sorted_entries(sorted_entries):
+    for entry in sorted_entries:
+        cursor.execute("insert into events (time, name) values(?, ?)", (entry[0], entry[1]))
+        conn.commit()
+    
+def sort_table():
+    cursor.execute("select * from events")
+    entries = cursor.fetchall()
+    sorted_entries = sorted(entries, key = lambda x : datetime.strptime(x[0], "%Y-%m-%d %H:%M:%S"))
+    cursor.execute("delete from events")
+    conn.commit()
+    store_sorted_entries(sorted_entries)
 
 if __name__ == "__main__":
     
@@ -373,8 +401,12 @@ if __name__ == "__main__":
     
     get_acwing_contest(driver)
         
-    sign_in(driver)
+    log_in(driver)
+    
+    prepare_query(driver)
         
     store_event(driver)
+    
+    sort_table()
     
     driver.quit()
