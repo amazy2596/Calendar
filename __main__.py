@@ -1,5 +1,5 @@
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -35,17 +35,16 @@ def open_browser():
 def log_in(driver):
     
     url = "https://developer.microsoft.com/en-us/graph/graph-explorer"
-
     driver.get(url)
     
     email = os.getenv("EMAIL_ADDRESS")
     password = os.getenv("EMAIL_PASSWORD")
-
-    url = "https://developer.microsoft.com/en-us/graph/graph-explorer"
-    driver.get(url)
     
-    sign_in_button = WebDriverWait(driver, 15).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "root-151"))
+    time.sleep(3)
+    
+    # ms-Icon root-89 css-158 ms-Button-icon icon-155
+    sign_in_button = WebDriverWait(driver, 5).until(
+        EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'ms-Icon') and contains(@class, 'root-89') and contains(@class, 'css-158') and contains(@class, 'ms-Button-icon') and contains(@class, 'icon-155')]"))
     )
     
     ActionChains(driver)\
@@ -81,14 +80,14 @@ def log_in(driver):
         EC.presence_of_element_located((By.ID, "i0118"))
     )
     
-    sign_in_button = WebDriverWait(driver, 15).until(
+    SIButton = WebDriverWait(driver, 15).until(
         EC.presence_of_element_located((By.ID, "idSIButton9"))
     )
     
     ActionChains(driver)\
         .send_keys_to_element(password_input, password)\
         .pause(1)\
-        .click(sign_in_button)\
+        .click(SIButton)\
         .pause(1)\
         .perform()
         
@@ -107,13 +106,16 @@ def log_in(driver):
     
     try: 
         
-        sign_in_button = driver.find_element("css selector", ".root-151")
+        sign_in_button = WebDriverWait(driver, 1).until(
+            EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'ms-Icon') and contains(@class, 'root-89') and contains(@class, 'css-158') and contains(@class, 'ms-Button-icon') and contains(@class, 'icon-155')]"))
+        )
         
         while True:
             
             try:
-                
-                sign_in_button = driver.find_element("css selector", ".root-151")
+                sign_in_button = WebDriverWait(driver, 1).until(
+                    EC.presence_of_element_located((By.XPATH, "//*[contains(@class, 'ms-Icon') and contains(@class, 'root-89') and contains(@class, 'css-158') and contains(@class, 'ms-Button-icon') and contains(@class, 'icon-155')]"))
+                )
                 
                 ActionChains(driver)\
                     .pause(1)\
@@ -147,10 +149,10 @@ def log_in(driver):
 
                 driver.refresh()
                 
-            except NoSuchElementException:
+            except (TimeoutException, NoSuchElementException):
                 break
             
-    except NoSuchElementException:
+    except (TimeoutException, NoSuchElementException):
         pass
 
 def prepare_query(driver):
@@ -397,7 +399,7 @@ if __name__ == "__main__":
     
     get_luogu_contest(driver)
     
-    get_lanqiao_contest(driver)
+    # get_lanqiao_contest(driver)
     
     get_acwing_contest(driver)
         
