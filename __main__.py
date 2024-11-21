@@ -22,9 +22,12 @@ def open_browser():
     options = Options()
     # options.add_argument("--headless")  # 如果需要无界面模式，取消注释
     options.add_argument("--start-maximized")  # 启动时最大化窗口
-    options.add_argument('--disable-software-rasterizer')  # 禁用软件光栅化
-    options.add_argument("--disable-gpu") # 禁用GPU加速
-    options.add_argument('--disable-dev-shm-usage')  # 避免资源占用过大
+    # options.add_argument('--disable-software-rasterizer')  # 禁用软件光栅化
+    # options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36")
+    # options.add_argument("--disable-gpu") # 禁用GPU加速
+    # options.add_argument('--no-sandbox')  # 解决权限问题
+    # options.add_argument('--disable-dev-shm-usage')  # 避免/dev/shm内存不足的问题
+    # options.add_argument('--remote-debugging-port=9222')  # 解决 DevToolsActivePort 问题
 
     service = Service(os.getenv("DRIVER_PATH"))
     
@@ -233,6 +236,7 @@ def store_event(driver):
         cursor.execute("select * from events where name = ?", (name,))
         result = cursor.fetchone()
         if not result:
+            print(time, name)
             create_event(driver, name, time)
             cursor.execute("insert into events values(?, ?)", (datetime.strftime(time, "%Y-%m-%d %H:%M:%S"), name))
             conn.commit()
@@ -240,7 +244,8 @@ def store_event(driver):
 def get_codeforces_contest(driver):
     url = "https://codeforces.com/contests?complete=true"
     driver.get(url)
-    WebDriverWait(driver, 15).until(
+    
+    WebDriverWait(driver, 5).until(
         EC.presence_of_element_located((By.CLASS_NAME, "datatable"))
     )
     contests = driver.find_elements("css selector", ".datatable tbody tr")
@@ -253,7 +258,7 @@ def get_codeforces_contest(driver):
             time = datetime.strptime(time, "%b/%d/%Y %H:%M")
             
             if time > datetime.now():
-                print(time, name)
+                # print(time, name)
                 data[name] = time
                 
 def get_nowcoder_contest(driver):
@@ -272,7 +277,7 @@ def get_nowcoder_contest(driver):
         time = datetime.strptime(time, "%Y-%m-%d %H:%M")
         
         if time > datetime.now():
-            print(time, name)
+            # print(time, name)
             data[name] = time
             
     url = "https://ac.nowcoder.com/acm/contest/vip-index?topCategoryFilter=14"
@@ -290,7 +295,7 @@ def get_nowcoder_contest(driver):
         time = datetime.strptime(time, "%Y-%m-%d %H:%M")
         
         if time > datetime.now():
-            print(time, name)
+            # print(time, name)
             data[name] = time
             
 def get_atcoder_contest(driver):
@@ -308,7 +313,7 @@ def get_atcoder_contest(driver):
         time = datetime.strptime(time, "%Y-%m-%d(%a) %H:%M")
         
         if time > datetime.now():
-            print(time, name)
+            # print(time, name)
             data[name] = time
             
 def get_luogu_contest(driver):
@@ -328,7 +333,7 @@ def get_luogu_contest(driver):
         time = datetime.strptime(time, "%Y-%m-%d %H:%M")
         
         if time > datetime.now():
-            print(time, name)
+            # print(time, name)
             data[name] = time
             
 def get_lanqiao_contest(driver):
@@ -350,7 +355,7 @@ def get_lanqiao_contest(driver):
         time = datetime.strptime(time, "%Y-%m-%d %H:%M")
         
         if time > datetime.now():
-            print(time, name)
+            # print(time, name)
             data[name] = time
             
 def get_acwing_contest(driver):
@@ -369,7 +374,7 @@ def get_acwing_contest(driver):
         time = datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
         
         if time > datetime.now():
-            print(time, name)
+            # print(time, name)
             data[name] = time
     
 def store_sorted_entries(sorted_entries):
@@ -399,7 +404,7 @@ if __name__ == "__main__":
     
     get_luogu_contest(driver)
     
-    # get_lanqiao_contest(driver)
+    get_lanqiao_contest(driver)
     
     get_acwing_contest(driver)
         

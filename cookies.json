@@ -1,1 +1,42 @@
-[{"domain": ".microsoft.com", "expiry": 1724146130, "httpOnly": false, "name": "MS0", "path": "/", "sameSite": "None", "secure": true, "value": "d4cb241ce9094fcd8ac664b36b122149"}, {"domain": "developer.microsoft.com", "expiry": 1724146126, "httpOnly": false, "name": "ai_session", "path": "/", "sameSite": "None", "secure": true, "value": "OYw47EfLz/EhmoJJq0UuUf|1724144326643|1724144326643"}, {"domain": ".microsoft.com", "expiry": 1755680330, "httpOnly": false, "name": "MC1", "path": "/", "sameSite": "None", "secure": true, "value": "GUID=8e36260c0d5f4cecbeb6d33bbb4e2d51&HASH=8e36&LV=202408&V=4&LU=1724144329022"}, {"domain": "developer.microsoft.com", "expiry": 1755680326, "httpOnly": false, "name": "ai_user", "path": "/", "sameSite": "None", "secure": true, "value": "6UDJOtHX/xq7Wzf12eTh3r|2024-08-20T08:58:46.637Z"}]
+[
+    {
+        "domain": ".microsoft.com",
+        "expiry": 1724146130,
+        "httpOnly": false,
+        "name": "MS0",
+        "path": "/",
+        "sameSite": "None",
+        "secure": true,
+        "value": "d4cb241ce9094fcd8ac664b36b122149"
+    },
+    {
+        "domain": "developer.microsoft.com",
+        "expiry": 1724146126,
+        "httpOnly": false,
+        "name": "ai_session",
+        "path": "/",
+        "sameSite": "None",
+        "secure": true,
+        "value": "OYw47EfLz/EhmoJJq0UuUf|1724144326643|1724144326643"
+    },
+    {
+        "domain": ".microsoft.com",
+        "expiry": 1755680330,
+        "httpOnly": false,
+        "name": "MC1",
+        "path": "/",
+        "sameSite": "None",
+        "secure": true,
+        "value": "GUID=8e36260c0d5f4cecbeb6d33bbb4e2d51&HASH=8e36&LV=202408&V=4&LU=1724144329022"
+    },
+    {
+        "domain": "developer.microsoft.com",
+        "expiry": 1755680326,
+        "httpOnly": false,
+        "name": "ai_user",
+        "path": "/",
+        "sameSite": "None",
+        "secure": true,
+        "value": "6UDJOtHX/xq7Wzf12eTh3r|2024-08-20T08:58:46.637Z"
+    }
+]
