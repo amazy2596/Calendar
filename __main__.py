@@ -1,5 +1,6 @@
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -20,16 +21,50 @@ data = {}
 def open_browser():
 
     options = Options()
-    # options.add_argument("--headless")  # 如果需要无界面模式，取消注释
-    options.add_argument("--start-maximized")  # 启动时最大化窗口
-    # options.add_argument('--disable-software-rasterizer')  # 禁用软件光栅化
-    # options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36")
-    # options.add_argument("--disable-gpu") # 禁用GPU加速
-    # options.add_argument('--no-sandbox')  # 解决权限问题
-    # options.add_argument('--disable-dev-shm-usage')  # 避免/dev/shm内存不足的问题
-    # options.add_argument('--remote-debugging-port=9222')  # 解决 DevToolsActivePort 问题
+    
+    # ✅ 1. **无界面模式（headless），提升性能**
+    # options.add_argument("--headless=new")  # 旧版写法 "--headless"，新版推荐 "--headless=new"
 
-    service = Service(os.getenv("DRIVER_PATH"))
+    # ✅ 2. **禁用 GPU（仅在非 headless 模式下有用）**
+    options.add_argument("--disable-gpu")  
+
+    # ✅ 3. **减少资源占用**
+    options.add_argument("--no-sandbox")  # 解决权限问题，减少沙盒机制的开销
+    options.add_argument("--disable-dev-shm-usage")  # 解决 `/dev/shm` 内存不足问题
+    options.add_argument("--disable-software-rasterizer")  # 禁用 GPU 软光栅化，减少 CPU 负担
+
+    # ✅ 4. **限制 Chrome 进程数，防止 CPU 过载**
+    options.add_argument("--disable-background-networking")  # 禁止 Chrome 进行后台网络操作
+    options.add_argument("--disable-background-timer-throttling")  # 禁止后台 Tab 降低性能
+    options.add_argument("--disable-backgrounding-occluded-windows")  # 禁用后台窗口优化
+    options.add_argument("--disable-renderer-backgrounding")  # 禁止后台渲染优化
+    options.add_argument("--disable-extensions")  # 禁用所有扩展，提高启动速度
+    options.add_argument("--disable-sync")  # 禁用 Google 账户同步，提高性能
+
+    # ✅ 5. **减少加载时间**
+    options.add_argument("--disable-blink-features=AutomationControlled")  # 伪装成普通浏览器，避免被检测
+    options.add_argument("--disable-ipc-flooding-protection")  # 取消 IPC 限制，提升性能
+    options.add_argument("--disable-features=Translate,InfiniteSessionRestore,AutofillServerCommunication")  # 禁用翻译、自动填充等功能
+    options.add_argument("--disk-cache-size=10000000")  # 限制缓存大小，减少 IO 负担
+
+    # ✅ 6. **最大化窗口，提高页面可见区域**
+    options.add_argument("--start-maximized")  # 启动时最大化窗口
+
+    # ✅ 7. **自定义 User-Agent，避免被检测**
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.6943.60 Safari/537.36")
+
+    # ✅ 8. **禁用图片加载，提高加载速度**
+    # options.add_argument("--blink-settings=imagesEnabled=false")
+
+    # ✅ 9. **禁用日志，减少 CPU 负担**
+    options.add_argument("--log-level=3")  # 降低日志级别，只显示严重错误
+    options.add_argument("--silent")  # 关闭控制台日志输出
+
+    # ✅ 10. **避免 Chrome 提示“正在自动化”**
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option("useAutomationExtension", False)
+
+    service = Service(ChromeDriverManager().install())
     
     driver = webdriver.Chrome(service=service, options=options)
     
@@ -61,8 +96,8 @@ def log_in(driver):
         if window != original_window:
             driver.switch_to.window(window)
             break
-    
-    email_input = WebDriverWait(driver, 15).until(
+        
+    email_input = WebDriverWait(driver, timeout=30).until(
         EC.presence_of_element_located((By.ID, "i0116"))
     )
     

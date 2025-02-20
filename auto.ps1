@@ -1,4 +1,4 @@
-conda activate common
+# conda activate common
 
 python D:\Code\My_plugin\Calendar\__main__.py
 
